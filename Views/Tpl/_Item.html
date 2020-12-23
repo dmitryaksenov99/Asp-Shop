@@ -1,0 +1,56 @@
+﻿<style>
+    .itemView div.item strong {
+        color: #000;
+        display: block;
+    }
+
+    .itemView {
+        background-color: #eeeeee;
+        position: relative;
+        display: block;
+        max-width: 1120px;
+        top: 0px !important;
+        margin: -10px auto !important;
+    }
+
+    .itemImage {
+        height: 128px;
+        width: 100%;
+        object-fit: contain;
+    }
+
+    .itemView div.item {
+        border-radius: 10px 10px 10px 10px;
+        background-color: #fff;
+        float: left;
+        padding: 16px 16px;
+        margin: 10px 0px 0px 0px;
+        text-align: center;
+        line-height: 28px;
+        font-size: 14px;
+        font-family: 'Lato', sans-serif !important;
+        width: 250px;
+        cursor: pointer;
+    }
+
+    .itemView div.item:nth-child(3n) {
+        margin-left: 0px;
+    }
+
+    .itemMoney {
+        background: #fef2b8;
+        border-radius: 10px 10px 10px 10px;
+    }
+</style>
+
+<text>
+    <tpl for=".">
+        <div class="item">
+            <img class="itemImage" src="{Image}" />
+            <strong>{Name}</strong>
+            <p class="itemMoney">
+                {Price:usMoney}
+            </p>
+        </div>
+    </tpl>
+</text>

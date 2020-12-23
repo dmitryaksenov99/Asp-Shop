@@ -1,0 +1,306 @@
+﻿@using AspShop.Helpers
+@using System.Text.RegularExpressions
+
+<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Lato" />
+<link rel="stylesheet" type="text/css" href="~/Content/main.css" />
+<script>
+    Ext.onReady(function ()
+    {
+        @Html.Raw(Viewport())
+    });
+</script>
+
+@functions
+{
+    private Window AuthWindow(string eventName)
+    {
+        var authWindow = new Window
+        {
+            Hidden = true,
+            ID = "Window1",
+            Closable = false,
+            Resizable = false,
+            Icon = Icon.Lock,
+            Draggable = true,
+            Modal = false,
+            Layout = LayoutType.Form.ToString(),
+            Title = "Вход в интернет-магазин",
+            Frame = false,
+            Width = 400,
+            BodyPadding = 20,
+            DefaultAnchor = "100%",
+            AutoEl =
+            {
+                Tag = HtmlTextWriterTag.Form,
+                CustomConfig =
+                {
+                    new ConfigItem()
+                    {
+                        Name = "method",
+                        Value = "POST",
+                        Mode = ParameterMode.Value
+                    }
+                }
+            },
+            Items =
+            {
+                new TextField
+                {
+                    ID = "loginTextField" + eventName,
+                    FieldLabel = "Логин",
+                    AllowBlank = false,
+                    BlankText = "Необходимо ввести имя пользователя"
+                },
+                new TextField
+                {
+                    ID = "passwordTextField" + eventName,
+                    InputType = Ext.Net.InputType.Password,
+                    FieldLabel = "Пароль",
+                    AllowBlank = false,
+                    BlankText = "Необходимо ввести пароль"
+                },
+                new Checkbox
+                {
+                    ID = "rememberMeCheckbox" + eventName,
+                    FieldLabel = "Запомнить меня",
+                    LabelWidth = 115,
+                },
+            },
+            Buttons =
+            {
+                new Button
+                {
+                    Text = "Зарегистрироваться",
+                    FormBind = true,
+                    Handler = string.Format("window.location.href = '{0}'", Url.Action("Index", "Register"))
+                },
+                new Button
+                {
+                    Text = "Войти",
+                    FormBind = true,
+                    DirectEvents =
+                    {
+                        Click =
+                        {
+                            Url = Url.Action("Login", "Auth"),
+                            ShowWarningOnFailure = false,
+                            EventMask =
+                            {
+                                ShowMask = true,
+                                Msg = "Авторизация...",
+                                MinDelay = 500
+                            },
+                            ExtraParams=
+                            {
+                                new Parameter("EmailOrNumber", string.Format("App.loginTextField{0}.value", eventName), ParameterMode.Raw),
+                                new Parameter("Password", string.Format("App.passwordTextField{0}.value", eventName), ParameterMode.Raw),
+                                new Parameter("RememberMe", string.Format("App.rememberMeCheckbox{0}.value", eventName), ParameterMode.Raw),
+                                new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        return authWindow;
+    }
+    private Panel UpperHeader(string eventName)
+    {
+        var m2 = new HyperlinkButton
+        {
+            Html = "Главная",
+            Cls = "headerButton",
+            Handler = string.Format("window.location.href = '{0}'", Url.Action("Index", "Home"))
+        };
+        var m3 = new HyperlinkButton
+        {
+            Html = "Панель администратора",
+            Cls = "headerButton",
+            Handler = string.Format("window.location.href = '{0}'", Url.Action("Index", "Admin"))
+        };
+        var m4 = new HyperlinkButton
+        {
+            Html = "Корзина",
+            Cls = "headerButton",
+            Handler = string.Format("window.location.href = '{0}'", Url.Action("Index", "Cart"))
+        };
+        var m5 = new HyperlinkButton
+        {
+            Html = "Мои заказы",
+            Cls = "headerButton",
+            Handler = string.Format("window.location.href = '{0}'", Url.Action("Index", "Orders"))
+        };
+        var m6 = new HyperlinkButton
+        {
+            ID = "loginTxt",
+            Html = "Здравствуйте, " + User.Identity.Name,
+            Cls = "headerButton",
+            Handler = "App.Window1.show();"
+        };
+
+        var upperHeader = new Panel()
+        {
+            ID = "UPPERHEADER",
+            Region = Region.North,
+            Layout = "hbox",
+            BodyCls = "upperHeader",
+            Height = 40,
+            Items =
+            {
+                m2,
+                m3,
+                m4,
+                m5,
+                m6
+            }
+        };
+
+        if (User.Identity.Name == "")
+        {
+            m6.Html = "<a>Войти</a>";
+        }
+        else
+        {
+            m6.Handler = null;
+            var l1 = new HyperlinkButton
+            {
+                ID = "logoutTxt",
+                Html = "Выйти",
+                Cls = "headerButton",
+                DirectEvents =
+                {
+                    Click =
+                    {
+                        Url = Url.Action("Logout", "Auth"),
+                        ShowWarningOnFailure = false,
+                        EventMask =
+                        {
+                            ShowMask = true,
+                            Msg = "Выходим из аккаунта...",
+                            MinDelay = 500
+                        },
+                        ExtraParams=
+                        {
+                            new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                        }
+                    }
+                }
+            };
+
+            upperHeader.Items.Add(l1);
+        }
+
+        return upperHeader;
+    }
+    private Panel LowerHeader(string eventName)
+    {
+        Panel lowerHeader = new Panel()
+        {
+            ID = "LOWERHEADER",
+            Region = Region.North,
+            Layout = "hbox",
+            BodyCls = "lowerHeader",
+            Cls = "lowerHeader",
+            Height = 80,
+            Items =
+{
+                new Label
+                {
+                    Html = "<div class=\"headerLabel\" onclick=\"window.location.href = '/extnet'\">AspShop</div>",
+                },
+
+                new ComboBox
+                {
+                    Cls = "headerComboBox",
+                    //MarginSpec = "24 0 0 100",
+                    TypeAhead = false,
+                    //Width = 994,
+                    HideTrigger = false,
+                    MinChars = 1,
+                    TriggerAction = TriggerAction.Query,
+                    ListConfig = new BoundList
+                    {
+
+                        LoadingText = "Searching...",
+                        ItemTpl = new XTemplate
+                        {
+                            Html = File.ReadAllText(Server.MapPath("~/Views/Tpl/_Search.html"))
+                        }
+                    },
+                    Store =
+                    {
+                        new Store
+                        {
+                            ID = "Store2",
+                            PageSize = 10,
+                            AutoLoad = false,
+                            Proxy =
+                            {
+                                new AjaxProxy
+                                {
+
+                                    Url = Url.Action("Search", "Item"),
+                                    ActionMethods =
+                                    {
+                                        Read = HttpMethod.POST
+                                    },
+                                    Reader =
+                                    {
+                                        new JsonReader
+                                        {
+                                            RootProperty = "data"
+                                        }
+                                    }
+                                }
+                            },
+                            Parameters =
+                            {
+                                new
+                                {
+                                    startRemote = 0,
+                                    limitRemote = 10000,
+                                        // start = 0,
+                                        // limit = 12
+                                }
+                            },
+                        }
+                    },
+                 /*   TopBar =
+                    {
+                        new PagingToolbar
+                        {
+                            StoreID = "Store1",
+                            HideRefresh = false,
+                            RefreshHandler = "App.Store1.load()"
+                        },
+                    }*/
+                }
+            }
+        };
+
+        return lowerHeader;
+    }
+    private Panel Footer(string eventName)
+    {
+        var footer = new Panel
+        {
+            BodyCls = "footer",
+            Height = 120,
+        };
+
+        return footer;
+    }
+    private string Viewport()
+    {
+        ViewBag.Viewport.Items[0].Add(AuthWindow("authWindow"));
+        ViewBag.Viewport.Items[0].Items[0].Add(UpperHeader("upperHeader"));
+        ViewBag.Viewport.Items[0].Items[0].Add(LowerHeader("lowerHeader"));
+        ViewBag.Viewport.Items[0].Items[2].Add(Footer("footer"));
+
+        return null;
+    }
+}
+
+@Html.X().ResourceManager(ViewBag.ManagerConfig as MvcResourceManagerConfig)
+@RenderSection("js", true)

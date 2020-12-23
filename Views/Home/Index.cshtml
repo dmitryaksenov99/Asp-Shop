@@ -1,0 +1,193 @@
+﻿@model System.Collections.IEnumerable
+@using AspShop.Helpers
+@{
+    ViewBag.Title = "AspShop - Главная";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    var theme = (Theme)Enum.Parse(typeof(Theme), Theme.Material.ToString());
+        this.Session["Ext.Net.Theme"] = theme;
+     //   ResourceManager1.SetTheme(theme);
+}
+
+@section js
+{
+    <script>
+        Ext.onReady(function(){@Html.Raw(Viewport())});
+
+        var filterByPrice = function (slider) {
+            var store = App.Store1, values = slider.getValues();
+            store.suspendEvents();
+            store.clearFilter();
+            store.resumeEvents();
+            store.filter([{
+                fn: function (record) {
+                    return record.get('Price') >= values[0] && record.get('Price') <= values[1];
+                }
+            }]);
+        };
+    </script>
+}
+
+@functions
+{
+    protected string Viewport()
+    {
+        var leftContainer = new Panel
+        {
+            Cls = "leftContainer",
+            Width = 750,
+            Height = 1300,
+            MarginSpec = "0 0 0 0",
+            Items =
+        {
+                new DataView
+                {
+                    DeferInitialRefresh = false,
+                    ItemSelector = "div.item",
+                    Cls = "itemView",
+                    TrackOver = true,
+                    LoadMask = false,
+                    Store =
+                {
+                        new Store
+                        {
+                            ID = "Store1",
+                            PageSize = 15,
+
+                            Model =
+                        {
+                                new Model
+                                {
+                                    Fields =
+                                {
+                                        new ModelField("Id", ModelFieldType.String),
+                                        new ModelField("Name", ModelFieldType.String),
+                                        new ModelField("Price", ModelFieldType.String),
+                                        new ModelField("Image", ModelFieldType.String),
+                                    }
+                                }
+                            },
+                            Sorters =
+                        {
+                                new DataSorter
+                                {
+                                    ID = "DataSorter1",
+                                    Direction = Ext.Net.SortDirection.ASC,
+                                    Property = "Price"
+                                }
+                            },
+                            DataSource = Model
+                        }
+                    },
+                    Tpl = new XTemplate
+                    {
+                        Html = File.ReadAllText(Server.MapPath("~/Views/Tpl/_Item.html"))
+                    },
+                    Listeners =
+                    {
+                        ItemClick =
+                        {
+                            Handler = "window.open('/Item/Index?id=' + App.Store1.getAt(index).data.Id)"
+                        }
+                    },
+                    Plugins =
+                {
+                        new DataViewAnimated
+                        {
+                            Duration = 350,
+                            IDProperty = "Id"
+                        },
+                    },
+                }
+            },
+            TopBar =
+        {
+                new PagingToolbar
+                {
+                    StoreID = "Store1",
+                    HideRefresh = false,
+                    RefreshHandler = "App.Store1.load()"
+                },
+            }
+        };
+
+        var rightContainer = new Panel
+        {
+            ID = "rightContainer",
+            BodyCls = "dataViewContainer",
+            Cls = "dataViewContainer",
+            Width = 350,
+            Height = 291,
+            MarginSpec = "0 0 0 20",
+            Items =
+        {
+                new DisplayField
+                {
+                    Margin = 20,
+                    Text = "Ценовой диапазон:"
+                },
+                new Slider
+                {
+                    ID = "Slider1",
+                    Margin = 20,
+                    HideLabel = true,
+                    Width = 310,
+                    MaxValue = 10000,
+                    Numbers = new double[] { 0, 5000 },
+                    Listeners =
+                    {
+                        AfterRender =
+                        {
+                            Fn = "filterByPrice",
+                            Delay = 10
+                        },
+                        Change =
+                        {
+                            Fn = "filterByPrice",
+                            Buffer = 70,
+                        },
+                    }
+                },
+                new FieldSet
+                {
+                    Margin = 20,
+                    Title = "Сортировать",
+                    Items =
+                {
+                        new Radio
+                        {
+                            BoxLabel = "Сначала дороже",
+                            Name = "priceFilter",
+                            Listeners =
+                            {
+                                Change =
+                                {
+                                    Handler = "App.Store1.sort('Price', 'ASC')"
+                                }
+                            },
+
+                        },
+                        new Radio
+                        {
+                            BoxLabel = "Сначала дешевле",
+                            Name = "priceFilter",
+                            Listeners =
+                            {
+                                Change =
+                                {
+                                    Handler = "App.Store1.sort('Price', 'DESC')"
+                                }
+                            },
+                            Checked = true,
+                        }
+                    }
+                },
+            }
+        };
+
+        ViewBag.Viewport.Items[0].Items[1].Add(leftContainer);
+        ViewBag.Viewport.Items[0].Items[1].Add(rightContainer);
+
+        return ViewBag.Viewport.ToScript();
+    }
+}

@@ -1,0 +1,271 @@
+﻿@using AspShop.Helpers.Enums;
+@using AspShop.Helpers
+
+@model System.Collections.IEnumerable
+@{
+    ViewBag.Title = "AspShop - Корзина";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section js
+{
+    <script>
+        Ext.onReady(function () {;
+            @Html.Raw(Viewport())
+        });
+    </script>
+    <style>
+        .x-grid-cell-inner {
+    overflow: hidden;
+    margin: 10px 0px 10px 10px;
+    white-space: nowrap;
+}
+                .search-image {
+            vertical-align: middle;
+            max-height: 30px;
+            max-width: 40px;
+            object-fit: cover;
+        }
+    </style>
+}
+
+@functions
+{
+    protected string Viewport()
+    {
+        var gridPanel = new GridPanel
+        {
+            ID = "cartGrid",
+           // BodyCls = "dataViewContainer",
+            Cls = "dataViewContainer",
+            Width = 750,
+            Height = 1300,
+            MarginSpec = "0 20 0 0",
+            Store =
+            {
+                new Store
+                {
+                    ID = "store1",
+                    Model =
+                    {
+                        new Model
+                        {
+                            Fields =
+                            {
+                                new ModelField("CartId", ModelFieldType.String),
+                                new ModelField("CustomerId", ModelFieldType.String),
+                                new ModelField("OrderId", ModelFieldType.String),
+                                new ModelField("ItemId", ModelFieldType.String),
+                                new ModelField("ItemsCount", ModelFieldType.String),
+                                new ModelField("ItemPrice", ModelFieldType.String),
+
+                                new ModelField("Name", ModelFieldType.String),
+                                new ModelField("Image", ModelFieldType.String),
+                            }
+                        }
+                    },
+                    DataSource = Model
+                }
+            },
+            ColumnModel =
+            {
+                Columns =
+                {
+                    new Column
+                    {
+                        Hidden = true,
+                        DataIndex = "CustomerId"
+                    },
+                    new Column
+                    {
+                        Hidden = true,
+                        DataIndex = "CartId"
+                    },
+                    new Column
+                    {
+                        Hidden = true,
+                        DataIndex = "ItemId"
+                    },
+                    new TemplateColumn
+                    {
+                        Text = "Фото",
+                        Width = 60,
+                        Tpl = new XTemplate
+                        {
+                            Html = @"<img class='search-image' src='{Image}'/>"
+                        }
+                    },
+                    new ComponentColumn
+                    {
+                        Text = "Название товара",
+                        Editor = true,
+                        DataIndex = "Name",
+                        Flex = 150,
+                        Component =
+                        {
+
+                        }
+                    },
+                    new ComponentColumn
+                    {
+                        Text = "Кол-во",
+                        Editor = true,
+                        DataIndex = "ItemsCount",
+                        Width = 77,
+                        Component =
+                        {
+                            new NumberField
+                            {
+                                MaxValue = 99,
+                                MinValue = 1,
+                                DirectEvents =
+                                {
+                                    SpinUp =
+                                    {
+                                        Url = Url.Action("Spin", "Cart"),
+                                        ShowWarningOnFailure = true,
+                                        ExtraParams=
+                                        {
+                                            new Parameter("itemId", "this.column.record.data.ItemId", ParameterMode.Raw),
+                                            new Parameter("cartId", "this.column.record.data.CartId", ParameterMode.Raw),
+                                            new Parameter("itemsCount", "this.column.record.data.ItemsCount", ParameterMode.Raw),
+                                            new Parameter("spinType", "SpinUp", ParameterMode.Auto),
+                                            new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                                        }
+                                    },
+                                    SpinDown =
+                                    {
+                                        Url = Url.Action("Spin", "Cart"),
+                                        ShowWarningOnFailure = true,
+                                        ExtraParams=
+                                        {
+                                            new Parameter("itemId", "this.column.record.data.ItemId", ParameterMode.Raw),
+                                            new Parameter("itemsCount", "this.column.record.data.ItemsCount", ParameterMode.Raw),
+
+                                            new Parameter("spinType", "SpinDown", ParameterMode.Auto),
+                                            new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    new CommandColumn
+                    {
+                        Width = 50,
+                        Commands =
+                        {
+                            new GridCommand
+                            {
+                                CommandName = "Delete",
+                                Icon = Icon.Delete,
+                                ToolTip =
+                                {
+                                    Text = "Удалить из корзины"
+                                },
+                            },
+                        },
+                        Listeners =
+                        {
+                            Command =
+                            {
+                                Handler = string.Format("App.cartGrid.store.remove(record);")
+                            }
+                        },
+                        DirectEvents =
+                        {
+                            Command =
+                            {
+                                Url = Url.Action("Delete", "Cart"),
+                                ShowWarningOnFailure = true,
+                                ExtraParams=
+                                {
+                                    new Parameter("orderId", "record.data.OrderId", ParameterMode.Raw),
+                                    new Parameter("itemId", "record.data.ItemId", ParameterMode.Raw),
+                                    new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                                }
+                            }
+                        },
+                    },
+                }
+            }
+        };
+
+        var rightContainer = new Panel
+        {
+            BodyCls = "dataViewContainer",
+            Cls = "dataViewContainer",
+            Width = 350,
+            Height = 328,
+            Layout = LayoutType.VBox.ToString(),
+            BodyPadding = 20,
+            LayoutConfig =
+            {
+                new VBoxLayoutConfig { Align = VBoxAlign.Left }
+            },
+            Items =
+            {
+                new Label
+                {
+                    MarginSpec = "0 0 20 0",
+                    Text = "Новый заказ",
+                    Cls = "newOrder",
+                },
+                new Label
+                {
+                    MarginSpec = "0 0 20 0",
+                    Text = "Комментарий к заказу: ",
+                },
+                new TextArea
+                {
+                    ID = "orderComment",
+                    Width = 310,
+                    Height = 95,
+                    MarginSpec = "0 0 20 0",
+                    Listeners =
+                    {
+                        Change =
+                        {
+                            Handler = File.ReadAllText(Server.MapPath("~/Scripts/userscripts/trimCommentInCart.js"))
+                        }
+                    }
+                },
+                new Label
+                {
+                    ID = "symbolsCount",
+                    MarginSpec = "0 0 20 0",
+                    Text = "Осталось",
+                },
+                new Label
+                {
+                    ID = "cartCost",
+                    MarginSpec = "0 0 20 0",
+                    Text = "К оплате: ",
+                    Cls = "cartCost",
+                },
+                new Button
+                {
+                    Text="Оплатить",
+                    DirectEvents =
+                    {
+                        Click =
+                        {
+                            Url = Url.Action("AddToOrders", "Orders"),
+                            ShowWarningOnFailure = true,
+                            ExtraParams=
+                            {
+                                new Parameter("orderComment", "App.orderComment.value", ParameterMode.Raw),
+                                new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                            }
+                        }
+                    },
+                }
+            }
+        };
+
+        ViewBag.Viewport.Items[0].Items[1].Add(gridPanel);
+        ViewBag.Viewport.Items[0].Items[1].Add(rightContainer);
+
+        return ViewBag.Viewport.ToScript();
+    }
+}

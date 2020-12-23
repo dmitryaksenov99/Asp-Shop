@@ -1,0 +1,138 @@
+﻿@model System.Collections.IEnumerable
+@using AspShop.Helpers
+@{
+  //  ViewBag.Title = "AspShop - " + ViewBag.Item.NAME;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section js
+{
+    <script>
+        Ext.onReady(function () {;
+            @Html.Raw(Viewport())
+        });
+    </script>
+    <style>
+        .priceLabel {
+            font-size: 64pt;
+            font-weight: bold;
+            margin: 200px 50px 200px 100px;
+        }
+
+        .goodTitle {
+            margin: 80px 0px 0px 20px;
+            font-size: 48pt;
+            font-weight: bold;
+        }
+        .itemImage {
+            height: 400px;
+            width: 100%;
+            object-fit: contain;
+        }
+    </style>
+}
+
+@functions
+{
+    private Panel RegisterPanel(string eventName)
+    {
+        var registerPanel = new Panel
+        {
+            ID = eventName,
+            Title = "Регистрация",
+            Width = 400,
+            Height = 400,
+            BodyPadding = 20,
+            Layout = LayoutType.Card.ToString(),
+            ActiveIndex = 0,
+            Items =
+            {
+                new Panel
+                {
+                    Items =
+                    {
+                        new TextField
+                        {
+                            ID = "userNameTextField",
+                            FieldLabel = "Ваше имя",
+                        },
+                        new TextField
+                        {
+                            ID = "emailTextField",
+                            FieldLabel = "Эл. почта",
+                        },
+                        new TextField
+                        {
+                            ID = "numberTextField",
+                            FieldLabel = "Номер телефона",
+                        },
+                        new TextField
+                        {
+                            ID = "passwordTextField",
+                            FieldLabel = "Придумайте пароль",
+                            InputType = Ext.Net.InputType.Password,
+                        },
+                        new Label
+                        {
+                            Text = "Пароль должен быть не менее 6 символов, содержать цифры и заглавные буквы и не должен совпадать с именем и эл.почтой",
+                            Width = 400
+                        },
+                        new Checkbox
+                        {
+                            ID = "rememberMeCheckboxd",
+                            Name = "remember",
+                            FieldLabel = "Запомнить меня",
+                            LabelWidth = 115,
+                        },
+                    }
+                },
+            },
+            Buttons =
+            {
+                new Button
+                {
+                    Text = "Создать аккаунт",
+                    Icon = Icon.Accept,
+                    DirectEvents =
+                    {
+                        Click =
+                        {
+                            Url = Url.Action("Create", "Register"),
+                            Failure =
+                            @"Ext.MessageBox.show({
+                                title: 'Ошибка регистрации',
+                                msg: result.errorMessage,
+                                buttons: Ext.MessageBox.OK,
+                                icon: 'Error'
+                            });",
+                            ShowWarningOnFailure = false,
+                            EventMask =
+                            {
+                                ShowMask = true,
+                                Msg = "Регистрация...",
+                                MinDelay = 1000
+                            },
+                            ExtraParams=
+                            {
+                                new Parameter("Name", "App.userNameTextField.value", ParameterMode.Raw),
+                                new Parameter("Email", "App.emailTextField.value", ParameterMode.Raw),
+                                new Parameter("Number", "App.numberTextField.value", ParameterMode.Raw),
+                                new Parameter("Password", "App.passwordTextField.value", ParameterMode.Raw),
+                                new Parameter("RememberMe", "App.rememberMeCheckboxd.value", ParameterMode.Raw),
+                                new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                            }
+                        }
+                    }
+                },
+            }
+        };
+        return registerPanel;
+    }
+    protected string Viewport()
+    {
+        ViewBag.Viewport.Items[0].Items[1].Width = 400;
+        ViewBag.Viewport.Items[0].Items[1].Add(RegisterPanel("registerPanel"));
+
+        return ViewBag.Viewport.ToScript();
+    }
+}

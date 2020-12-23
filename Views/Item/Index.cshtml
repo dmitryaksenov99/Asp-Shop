@@ -1,0 +1,163 @@
+﻿@using AspShop.Helpers
+@model System.Collections.IEnumerable
+@{
+    ViewBag.Title = "AspShop - " + ViewBag.Item.Name;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section js
+{
+    <script>
+        Ext.onReady(function () {;
+            @Html.Raw(Viewport())
+        });
+    </script>
+    <style>
+        .priceLabel {
+            font-size: 64pt;
+            font-weight: bold;
+            margin: 200px 50px 200px 100px;
+        }
+
+        .goodTitle {
+            margin: 80px 0px 0px 20px;
+            font-size: 48pt;
+            font-weight: bold;
+        }
+
+        .itemImage {
+            height: 400px;
+            width: 100%;
+            object-fit: contain;
+        }
+    </style>
+}
+
+@functions
+{
+    protected string Viewport()
+    {
+        var itemName = new Label
+        {
+            ID = "Label1",
+            Cls = "goodTitle",
+            Text = ViewBag.Item.Name
+        };
+
+        TabPanel itemInfo = new TabPanel
+        {
+            MarginSpec = "80 0 0 0",
+            ID = "TabPanel1",
+            ActiveTabIndex = 0,
+            Width = 1120,
+            Height = 820,
+            Plain = true,
+            Items =
+        {
+                new Panel
+                {
+                    Title = "О товаре",
+                    BodyPadding = 20,
+                    Items =
+                {
+                        new Panel
+                        {
+                            MarginSpec = "0 0 20 0",
+                            Layout = LayoutType.Column.ToString(),
+                            Items =
+                        {
+                                new Image
+                                {
+                                    Cls = "itemImage",
+                                    ImageUrl = ViewBag.Item.Image,
+                                    Width = 500,
+                                },
+                                new Label
+                                {
+                                    Text = ViewBag.Item.Price + "$",
+                                    Cls = "priceLabel",
+                                },
+                                new Button
+                                {
+                                    Text = "Купить",
+                                    Width = 100,
+                                    Height = 32,
+                                    MarginSpec = "200 0 0 0",
+                                    DirectEvents =
+                                    {
+                                        Click =
+                                        {
+                                            Url = Url.Action("AddToCart", "Cart"),
+                                            CleanRequest = true,
+                                            Method = HttpMethod.POST,
+                                            /*   Confirmation =
+                                            {
+                                                ConfirmRequest = true,
+                                                Title = "Confirmation title"
+                                            },*/
+                                            ExtraParams =
+                                        {
+                                                new Parameter("itemId", ViewBag.Item.Id.ToString(), ParameterMode.Value),
+                                                new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                                            }
+                                        }
+                                    }
+                                },
+                            }
+                        },
+
+                        new Label
+                        {
+                            Width = 1120,
+                            Region = Region.South,
+                            Text = ViewBag.Item.Description
+                        },
+                    }
+                },
+                new Panel
+                {
+                    Title = "Характеристики",
+                    Items =
+                {
+                        new GridPanel
+                        {
+                            ColumnLines = false,
+                            RowLines = false,
+                            Store =
+                        {
+                                new Store
+                                {
+                                    Model =
+                                {
+                                        new Model
+                                        {
+                                            Fields =
+                                        {
+                                                new ModelField { Name = "Name", Type = ModelFieldType.String },
+                                                new ModelField { Name = "Value", Type = ModelFieldType.String }
+                                            }
+                                        }
+                                    },
+                                    DataSource = Model
+                                }
+                            },
+                            ColumnModel =
+                            {
+                                Columns =
+                            {
+                                    new Column { Text = "Характеристика", DataIndex = "Name", WidthSpec = "25%"},
+                                    new Column { Text = "Информация", DataIndex = "Value", WidthSpec = "75%"}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        ViewBag.Viewport.Items[0].Items[1].Add(itemName);
+        ViewBag.Viewport.Items[0].Items[1].Add(itemInfo);
+
+        return ViewBag.Viewport.ToScript();
+    }
+}

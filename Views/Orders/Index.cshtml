@@ -1,0 +1,169 @@
+﻿@using AspShop.Helpers.Enums;
+@using AspShop.Helpers
+
+@model System.Collections.IEnumerable
+@{
+    ViewBag.Title = "AspShop - Мои заказы";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section js
+{
+    <script>
+        Ext.onReady(function () {;
+            @Html.Raw(Viewport())
+        });
+    </script>
+    <style>
+        .search-image {
+            vertical-align: middle;
+            max-height: 30px;
+            max-width: 40px;
+            object-fit: cover;
+        }
+        .x-grid-cell-inner {
+            overflow: hidden;
+            margin: 10px 0px 10px 10px;
+            white-space: nowrap;
+        }
+    </style>
+}
+
+@functions
+{
+    protected string Viewport()
+    {
+        var leftContainer = new GridPanel
+        {
+       //     BodyCls = "dataViewContainer",
+            Cls = "dataViewContainer",
+            Width = 750,
+            Height = 1300,
+            MarginSpec = "0 20 0 0",
+            Store =
+            {
+                new Store
+                {
+                    ID = "orderStore",
+                    Model =
+                    {
+                        new Model
+                        {
+                            Fields =
+                            {
+                                new ModelField("OrderId", ModelFieldType.String),
+                                new ModelField("OrderNumber", ModelFieldType.String),
+                                new ModelField("OrderDate", ModelFieldType.String),
+                                new ModelField("ShipmentDate", ModelFieldType.String),
+                                new ModelField("ItemsCount", ModelFieldType.String),
+                                new ModelField("Cost", ModelFieldType.String),
+                            }
+                        }
+                    },
+                    DataSource = Model
+                },
+            },
+            ColumnModel =
+            {
+                Columns =
+                {
+                    new Column
+                    {
+                        Text = "ID заказа",
+                        DataIndex = "OrderNumber",
+                        WidthSpec = "19.9%",
+                    },
+                    new DateColumn
+                    {
+                        Text = "Дата заказа",
+                        DataIndex = "OrderDate",
+                        WidthSpec = "19.9%",
+                        Format = "yyyy/MM/dd H:mm:ss"
+                    },
+                    new DateColumn
+                    {
+                        Text = "Дата доставки",
+                        DataIndex = "ShipmentDate",
+                        WidthSpec = "13.3%",
+                        Format = "yyyy/MM/dd H:mm:ss"
+                    },
+                    new Column
+                    {
+                        Text = "Количество товаров",
+                        DataIndex = "ItemsCount",
+                        WidthSpec = "19.9%",
+                    },
+                    new Column
+                    {
+                        Text = "Стоимость заказа",
+                        DataIndex = "Cost",
+                        WidthSpec = "19.9%",
+                    },
+                    new CommandColumn
+                    {
+                        Width = 50,
+                        Commands =
+                        {
+                            new GridCommand
+                            {
+                                CommandName = "Delete",
+                                Icon = Icon.Delete,
+                                ToolTip =
+                                {
+                                    Text = "Удалить заказ"
+                                },
+                            },
+                        },
+                        Listeners =
+                        {
+                            Command =
+                            {
+                                Handler = string.Format("App.orderStore.remove(record);")
+                            }
+                        },
+                        DirectEvents =
+                        {
+                            Command =
+                            {
+                                Url = Url.Action("Delete", "Orders"),
+                                ShowWarningOnFailure = true,
+                                ExtraParams=
+                                {
+                                    new Parameter("orderId", "record.data.OrderId", ParameterMode.Raw),
+                                    new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                                }
+                            }
+                        },
+                    },
+                }
+            },
+            DirectEvents =
+            {
+                CellClick =
+                {
+                    Url = Url.Action("GetSelectedOrder", "Orders"),
+                    ShowWarningOnFailure = true,
+                    ExtraParams=
+                    {
+                        new Parameter("id", "record.data.OrderId", ParameterMode.Raw),
+                        new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                    },
+                }
+            },
+        };
+
+        var rightContainer = new Panel
+        {
+            ID = "rightContainer",
+            BodyCls = "dataViewContainer",
+            Cls = "dataViewContainer",
+            Width = 350,
+            Height = 708,
+        };
+
+        ViewBag.Viewport.Items[0].Items[1].Add(leftContainer);
+        ViewBag.Viewport.Items[0].Items[1].Add(rightContainer);
+
+        return ViewBag.Viewport.ToScript();
+    }
+}

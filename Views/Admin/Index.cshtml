@@ -1,0 +1,739 @@
+﻿@model System.Collections.IEnumerable
+@using AspShop.Helpers
+@{
+    ViewBag.Title = "AspShop - Главная";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section js
+{
+    <script>
+        Ext.onReady(function(){@Html.Raw(Viewport())});
+    </script>
+<style>
+        .search-image {
+    vertical-align: middle;
+    max-height: 22px;
+    max-width: 30px;
+    object-fit: cover;
+    }
+    </style>
+}
+
+@functions
+{
+    private GridPanel Users()
+    {
+        var users = new GridPanel
+        {
+            Title = "Пользователи",
+            TopBar =
+        {
+                new PagingToolbar
+                {
+                    StoreID = "UserStore",
+                    HideRefresh = false,
+                    RefreshHandler = "App.UserStore.load()"
+                },
+            },
+            Store =
+        {
+                new Store
+                {
+                    ID = "UserStore",
+                    PageSize = 15,
+                    Proxy =
+                {
+                        new AjaxProxy
+                        {
+                            Url = Url.Action("GetAll", "UserAdmin"),
+                            Reader =
+                        {
+                                new JsonReader
+                                {
+                                    RootProperty = "data"
+                                }
+                            },
+                        },
+                    },
+                }
+            },
+            DirectEvents =
+        {
+            CellClick =
+            {
+                Url = Url.Action("GetById", "UserAdmin"),
+                ShowWarningOnFailure = true,
+                ExtraParams=
+                {
+                        new Parameter("id", "record.data.Id", ParameterMode.Raw),
+                        new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                    },
+            }
+        },
+            ColumnModel =
+        {
+            Columns =
+            {
+                    new Column
+                    {
+                        Text = "Почта",
+                        DataIndex = "Email",
+                        WidthSpec = "42%"
+                    },
+                    new Column
+                    {
+                        Text = "Дата регистрации",
+                        DataIndex = "RegDate",
+                        WidthSpec = "42%"
+                    },
+                    new CommandColumn
+                    {
+                        WidthSpec = "8%",
+                        Commands =
+                    {
+                            new GridCommand
+                            {
+                                CommandName = "Delete",
+                                Icon = Icon.Delete,
+                                ToolTip =
+                                {
+                                    Text = "Удалить пользователя"
+                                }
+                            }
+                        },
+                        Listeners =
+                        {
+                            Command =
+                            {
+                                Handler = string.Format("App.UserStore.remove(record);")
+                            }
+                        },
+                        DirectEvents =
+                        {
+                            Command =
+                            {
+                                Url = Url.Action("Delete", "UserAdmin"),
+                                ShowWarningOnFailure = true,
+                                ExtraParams=
+                            {
+                                    new Parameter("id", "record.data.Id", ParameterMode.Raw),
+                                    new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                                }
+                            }
+                        },
+                    }
+                }
+        },
+            Buttons =
+        {
+                new Button
+                {
+                    Text = "Создать пользователя",
+                    DirectEvents =
+                    {
+                        Click =
+                        {
+                            Url = Url.Action("InitCreate", "UserAdmin"),
+                            ShowWarningOnFailure = true,
+                            ExtraParams=
+                        {
+                                new Parameter("__RequestVerificationToken", AntiForgeryField.GetField()),
+                            }
+                        }
+                    },
+                }
+            },
+            SelectionModel =
+        {
+                new CheckboxSelectionModel
+                {
+                    Mode = SelectionMode.Multi
+                }
+            },
+        };
+        return users;
+    }
+    private GridPanel Roles()
+    {
+        var roles = new GridPanel
+        {
+            Title = "Роли",
+            TopBar =
+        {
+                new PagingToolbar
+                {
+                    StoreID = "RoleStore",
+                    HideRefresh = false,
+                    RefreshHandler = "App.RoleStore.load()"
+                },
+            },
+            Store =
+        {
+                new Store
+                {
+                    ID = "RoleStore",
+                    Proxy =
+                {
+                        new AjaxProxy
+                        {
+                            Url = Url.Action("GetAll", "RoleAdmin"),
+                            Reader =
+                        {
+                                new JsonReader
+                                {
+                                    RootProperty = "data"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            DirectEvents =
+        {
+            CellClick =
+            {
+                Url = Url.Action("GetById", "RoleAdmin"),
+                ShowWarningOnFailure = true,
+                ExtraParams=
+                {
+                        new Parameter("id", "record.data.Id", ParameterMode.Raw),
+                        new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                    },
+
+            }
+        },
+            ColumnModel =
+        {
+            Columns =
+            {
+                    new Column
+                    {
+                        Text = "Название роли",
+                        DataIndex = "Name",
+                        WidthSpec = "84%"
+                    },
+                    new CommandColumn
+                    {
+                        WidthSpec = "8%",
+                        Commands =
+                    {
+                            new GridCommand
+                            {
+                                CommandName = "Delete",
+                                Icon = Icon.Delete,
+                                ToolTip =
+                                {
+                                    Text = "Удалить роль"
+                                }
+                            }
+                        },
+                        Listeners =
+                        {
+                            Command =
+                            {
+                                Handler = string.Format("App.RoleStore.remove(record);")
+                            }
+                        },
+                        DirectEvents =
+                        {
+                            Command =
+                            {
+                                Url = Url.Action("Delete", "UserAdmin"),
+                                ShowWarningOnFailure = true,
+                                ExtraParams=
+                            {
+                                    new Parameter("id", "record.data.Id", ParameterMode.Raw),
+                                    new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                                }
+                            }
+                        },
+                    }
+                }
+        },
+            Buttons =
+        {
+                new Button
+                {
+                    Text = "Создать роль",
+                    DirectEvents =
+                    {
+                        Click =
+                        {
+                            Url = Url.Action("InitCreate", "RoleAdmin"),
+                            ShowWarningOnFailure = true,
+                            ExtraParams=
+                        {
+                                new Parameter("__RequestVerificationToken", AntiForgeryField.GetField()),
+                            }
+                        }
+                    },
+                }
+            },
+            SelectionModel =
+        {
+                new CheckboxSelectionModel
+                {
+                    Mode = SelectionMode.Multi
+                }
+            }
+        };
+        return roles;
+    }
+    private GridPanel Items()
+    {
+        var items = new GridPanel
+        {
+            Title = "Товары",
+            TopBar =
+        {
+                new PagingToolbar
+                {
+                    StoreID = "ItemStore",
+                    HideRefresh = false,
+                    RefreshHandler = "App.ItemStore.load()"
+                },
+            },
+            Store =
+        {
+                new Store
+                {
+                    ID = "ItemStore",
+                    PageSize = 15,
+                    Proxy =
+                {
+                        new AjaxProxy
+                        {
+                            Url = Url.Action("GetAll", "ItemAdmin"),
+                            Reader =
+                        {
+                                new JsonReader
+                                {
+                                    RootProperty = "data"
+                                }
+                            },
+                        },
+                    },
+                }
+            },
+            DirectEvents =
+        {
+            CellClick =
+            {
+                Url = Url.Action("GetById", "ItemAdmin"),
+                ShowWarningOnFailure = true,
+                ExtraParams=
+                {
+                        new Parameter("id", "record.data.Id", ParameterMode.Raw),
+                        //  new Parameter("addTo", addTo, ParameterMode.Auto),
+                        new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                    },
+            }
+        },
+            ColumnModel =
+        {
+            Columns =
+            {
+                    new Column
+                    {
+                        Text = "Название товара",
+                        DataIndex = "Name",
+                        WidthSpec = "33%"
+                    },
+                    new Column
+                    {
+                        Text = "Категория",
+                        DataIndex = "Category",
+                        WidthSpec = "33%"
+                    },
+                    new Column
+                    {
+                        Text = "Цена",
+                        DataIndex = "Price",
+                        WidthSpec = "25%"
+                    },
+                    new CommandColumn
+                    {
+                        WidthSpec = "8%",
+                        Commands =
+                    {
+                            new GridCommand
+                            {
+                                CommandName = "Delete",
+                                Icon = Icon.Delete,
+                                ToolTip =
+                                {
+                                    Text = "Удалить товар"
+                                }
+                            }
+                        },
+                        Listeners =
+                        {
+                            Command =
+                            {
+                                Handler = string.Format("App.ItemStore.remove(record);")
+                            }
+                        },
+                    /*    DirectEvents =
+                        {
+                            Command =
+                            {
+                                Url = Url.Action("Delete", "UserAdmin"),
+                                ShowWarningOnFailure = true,
+                                ExtraParams=
+                                {
+                                    new Parameter("id", "record.data.Id", ParameterMode.Raw),
+                                    new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                                }
+                            }
+                        },*/
+                    }
+                }
+        },
+            Buttons =
+        {
+                new Button
+                {
+                    Text = "Создать товар",
+                    DirectEvents =
+                    {
+                        Click =
+                        {
+                            Url = Url.Action("InitCreate", "ItemAdmin"),
+                            ShowWarningOnFailure = true,
+                            ExtraParams=
+                        {
+                                new Parameter("__RequestVerificationToken", AntiForgeryField.GetField()),
+                            }
+                        }
+                    },
+                }
+            },
+            SelectionModel =
+        {
+                new CheckboxSelectionModel
+                {
+                    Mode = SelectionMode.Multi
+                }
+            }
+        };
+        return items;
+    }
+    private GridPanel Orders()
+    {
+        var items = new GridPanel
+        {
+            Title = "Заказы",
+            TopBar =
+        {
+                new PagingToolbar
+                {
+                    StoreID = "OrderStore",
+                    HideRefresh = false,
+                    RefreshHandler = "App.OrderStore.load()"
+                },
+            },
+            Store =
+        {
+                new Store
+                {
+                    ID = "OrderStore",
+                    PageSize = 15,
+                    Proxy =
+                {
+                        new AjaxProxy
+                        {
+                            Url = Url.Action("GetAll", "OrderAdmin"),
+                            Reader =
+                        {
+                                new JsonReader
+                                {
+                                    RootProperty = "data"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            DirectEvents =
+        {
+            CellClick =
+            {
+                Url = Url.Action("GetById", "OrderAdmin"),
+                ShowWarningOnFailure = true,
+                ExtraParams=
+                {
+                        new Parameter("id", "record.data.Id", ParameterMode.Raw),
+                        new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                    },
+            }
+        },
+            ColumnModel =
+        {
+            Columns =
+            {
+                    new Column
+                    {
+                        Text = "Номер",
+                        DataIndex = "OrderNumber",
+                        WidthSpec = "30%"
+                    },
+                    new Column
+                    {
+                        Text = "Статус",
+                        DataIndex = "Status",
+                        WidthSpec = "29%"
+                    },
+                    new Column
+                    {
+                        Text = "Стоимость",
+                        DataIndex = "Cost",
+                        WidthSpec = "25%"
+                    },
+                    new CommandColumn
+                    {
+                        WidthSpec = "8%",
+                        Commands =
+                    {
+                            new GridCommand
+                            {
+                                CommandName = "Delete",
+                                Icon = Icon.Delete,
+                                ToolTip =
+                                {
+                                    Text = "Удалить заказ"
+                                }
+                            }
+                        },
+                        Listeners =
+                        {
+                            Command =
+                            {
+                                Handler = string.Format("App.OrderStore.remove(record);")
+                            }
+                        },
+                        DirectEvents =
+                        {
+                            Command =
+                            {
+                                Url = Url.Action("Delete", "UserAdmin"),
+                                ShowWarningOnFailure = true,
+                                ExtraParams=
+                            {
+                                    new Parameter("id", "record.data.Id", ParameterMode.Raw),
+                                    new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                                }
+                            }
+                        },
+                    }
+                }
+        },
+            Buttons =
+        {
+                new Button
+                {
+                    Text = "Создать заказ",
+                    DirectEvents =
+                    {
+                        Click =
+                        {
+                            Url = Url.Action("InitCreate", "OrderAdmin"),
+                            ShowWarningOnFailure = true,
+                            ExtraParams=
+                        {
+                                new Parameter("__RequestVerificationToken", AntiForgeryField.GetField()),
+                            }
+                        }
+                    },
+                }
+            },
+            SelectionModel =
+        {
+                new CheckboxSelectionModel
+                {
+                    Mode = SelectionMode.Multi
+                }
+            }
+        };
+        return items;
+    }
+    private GridPanel Carts()
+    {
+        var items = new GridPanel
+        {
+            Title = "Корзины",
+            TopBar =
+            {
+                new PagingToolbar
+                {
+                    StoreID = "CartStore",
+                    HideRefresh = false,
+                    RefreshHandler = "App.CartStore.load()"
+                },
+            },
+            Store =
+            {
+                new Store
+                {
+                    ID = "CartStore",
+                    PageSize = 15,
+                    Proxy =
+                    {
+                        new AjaxProxy
+                        {
+                            Url = Url.Action("GetAll", "CartAdmin"),
+                            Reader =
+                            {
+                                new JsonReader
+                                {
+                                    RootProperty = "data"
+                                }
+                            },
+                        },
+                    },
+                }
+            },
+            DirectEvents =
+            {
+                CellClick =
+                {
+                    Url = Url.Action("GetById", "CartAdmin"),
+                    ShowWarningOnFailure = true,
+                    ExtraParams=
+                    {
+                        new Parameter("id", "record.data.Id", ParameterMode.Raw),
+                        new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                    },
+                }
+            },
+            ColumnModel =
+            {
+                Columns =
+                {
+                    new Column
+                    {
+                        Text = "Номер",
+                        DataIndex = "OrderNumber",
+                        WidthSpec = "30%"
+                    },
+                    new Column
+                    {
+                        Text = "Статус",
+                        DataIndex = "Status",
+                        WidthSpec = "29%"
+                    },
+                    new Column
+                    {
+                        Text = "Стоимость",
+                        DataIndex = "Cost",
+                        WidthSpec = "25%"
+                    },
+                    new CommandColumn
+                    {
+                        WidthSpec = "8%",
+                        Commands =
+                        {
+                            new GridCommand
+                            {
+                                CommandName = "Delete",
+                                Icon = Icon.Delete,
+                                ToolTip =
+                                {
+                                    Text = "Удалить заказ"
+                                }
+                            }
+                        },
+                        Listeners =
+                        {
+                            Command =
+                            {
+                                Handler = string.Format("App.OrderStore.remove(record);")
+                            }
+                        },
+                        DirectEvents =
+                        {
+                            Command =
+                            {
+                                Url = Url.Action("Delete", "UserAdmin"),
+                                ShowWarningOnFailure = true,
+                                ExtraParams=
+                                {
+                                    new Parameter("id", "record.data.Id", ParameterMode.Raw),
+                                    new Parameter("__RequestVerificationToken", AntiForgeryField.GetField())
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            Buttons =
+            {
+                new Button
+                {
+                    Text = "Создать товар",
+                    DirectEvents =
+                    {
+                        Click =
+                        {
+                            Url = Url.Action("InitCreate", "ItemAdmin"),
+                            ShowWarningOnFailure = true,
+                            ExtraParams=
+                            {
+                                new Parameter("__RequestVerificationToken", AntiForgeryField.GetField()),
+                            }
+                        }
+                    },
+                }
+            },
+            SelectionModel =
+            {
+                new CheckboxSelectionModel
+                {
+                    Mode = SelectionMode.Multi
+                }
+            }
+        };
+
+        return items;
+    }
+    protected string Viewport()
+    {
+        var leftContainer = new TabPanel
+        {
+            ID = "leftContainer",
+            Scrollable = ScrollableOption.Vertical,
+            Cls = "leftContainer",
+            Width = 400,
+            Height = 680,
+            MarginSpec = "0 20 0 0",
+            Items =
+            {
+                Users(),
+                Roles(),
+                Items(),
+                Orders(),
+                Carts(),
+            }
+        };
+
+        var rightContainer = new Panel
+        {
+            ID = "rightContainer",
+            BodyCls = "dataViewContainer",
+            Cls = "dataViewContainer",
+            Width = 700,
+            Height = 1110,
+            MarginSpec = "0 0 0 0",
+            Scrollable = ScrollableOption.Vertical,
+            Items =
+            {
+
+            }
+        };
+
+        ViewBag.Viewport.Items[0].Items[1].Add(leftContainer);
+        ViewBag.Viewport.Items[0].Items[1].Add(rightContainer);
+
+        return ViewBag.Viewport.ToScript();
+    }
+}
