@@ -1,0 +1,143 @@
+﻿.upperHeader {
+    background-color: black;
+}
+
+.lowerHeader {
+    background-color: white;
+}
+
+.footer {
+    background-color: #1b1b22;
+}
+
+h2 {
+    margin-block-start: 0.5em;
+    margin-inline-start: 20px;
+}
+
+#LOWERHEADER-innerCt {
+    min-height: 80px;
+}
+
+.headerLabel {
+    cursor: pointer;
+    margin: 25px 0px 0px 20px;
+    color: black;
+    font-size: 32pt;
+    font-family: 'Lato', sans-serif !important;
+}
+
+.headerComboBox {
+    margin: 24px 0px 0px 50px;
+    width: calc(80% - 50px);
+}
+
+.headerButton {
+    padding: 10px;
+    font-size: 12pt;
+    color: white;
+    text-decoration: none;
+}
+.x-grid-body {
+    background: #fff;
+    border-width: 0px 0px 0px;
+    border-style: solid;
+    border-color: #d0d0d0;
+}
+a:hover {
+    color: #50a01f;
+}
+
+.panelContainer {
+    background: #eeeeee;
+}
+
+.clrFlButton {
+    border-radius: 10px 10px 10px 10px;
+}
+
+.leftContainer {
+    border-radius: 10px 10px 10px 10px;
+    background-color: white;/*red;*/
+}
+
+.dataViewContainer {
+    border-radius: 10px 10px 10px 10px;
+    background-color: white; /*red;*/
+}
+
+.x-accordion-item .x-accordion-hd {
+    border-radius: 10px 10px 10px 10px;
+}
+
+.pageContainer {
+    background-color: #eeeeee;/*blue;*/
+    margin: 20px auto;
+}
+
+.bodyPageContainer {
+    background-color: #eeeeee; /*blue;*/
+    margin: 0px auto;
+}
+
+.pagingPanel {
+    margin-top: 10px;
+}
+
+.loginButton {
+    margin-left: 70%;
+}
+
+.x-window-default {
+    border-width: 0px;
+    background-color: #6173e8;
+}
+
+.logoutForm {
+    background-color: black;
+}
+
+.morebutton {
+    background-color: purple;
+}
+
+///Корзина///
+.newOrder {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.cartCost {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+
+///Заказы///
+.priceLabel {
+    font-size: 64pt;
+    font-weight: bold;
+    margin: 200px 50px 200px 100px;
+}
+
+.goodTitle {
+    margin: 80px 0px 0px 20px;
+    font-size: 48pt;
+    font-weight: bold;
+}
+
+.itemImage {
+    height: 400px;
+    width: 100%;
+    object-fit: contain;
+}
+.orderId {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+#orderComment {
+    word-wrap: break-word;
+}
+
+</style >
